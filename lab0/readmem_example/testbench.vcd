@@ -1,0 +1,61 @@
+$date
+	Thu Jan 18 14:35:43 2018
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module testbench $end
+$var wire 32 ! memout [31:0] $end
+$var reg 1 " clock $end
+$scope module mem $end
+$var wire 1 " clock $end
+$var wire 32 # out [31:0] $end
+$var reg 2 $ addr [1:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b0 $
+b10010 #
+0"
+b10010 !
+$end
+#10
+b110000010 !
+b110000010 #
+b1 $
+1"
+#20
+0"
+#30
+b10010000 !
+b10010000 #
+b10 $
+1"
+#40
+0"
+#50
+b10 !
+b10 #
+b11 $
+1"
+#60
+0"
+#70
+b10010 !
+b10010 #
+b0 $
+1"
+#80
+0"
+#90
+b110000010 !
+b110000010 #
+b1 $
+1"
+#100
+0"

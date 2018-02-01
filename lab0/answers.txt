@@ -1,0 +1,9 @@
+Evan Harrington
+Lab0
+Answers.txt
+
+1. Differece bewtee simulation and synthesis.
+Simulation creates models that are supposed to copy the behavior of other models.  Simulators also can be used for a wide variety of rangig technologies ad also has no need to know the targets netlist. On the other hand, synthesizers 
+
+2. What is a testbench?
+Testbenches is verilog code that tests ad observes the behavior of certain simulations. We will want to use testbenches in order to check if our code runs smoothly. 

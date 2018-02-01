@@ -1,0 +1,85 @@
+$date
+	Thu Jan 25 13:02:37 2018
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module testbench $end
+$var wire 32 ! outputMin [31:0] $end
+$var wire 32 " outputMean [31:0] $end
+$var wire 32 # outputMax [31:0] $end
+$var reg 32 $ a [31:0] $end
+$var reg 32 % b [31:0] $end
+$scope module maximum $end
+$var wire 32 & a [31:0] $end
+$var wire 32 ' b [31:0] $end
+$var wire 32 ( out [31:0] $end
+$var reg 32 ) larger [31:0] $end
+$upscope $end
+$scope module mean1 $end
+$var wire 32 * a [31:0] $end
+$var wire 32 + b [31:0] $end
+$var wire 32 , out [31:0] $end
+$var reg 32 - average [31:0] $end
+$upscope $end
+$scope module minimum $end
+$var wire 32 . a [31:0] $end
+$var wire 32 / b [31:0] $end
+$var wire 32 0 out [31:0] $end
+$var reg 32 1 smaller [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b110 1
+b110 0
+b1100 /
+b110 .
+b1001 -
+b1001 ,
+b1100 +
+b110 *
+b1100 )
+b1100 (
+b1100 '
+b110 &
+b1100 %
+b110 $
+b1100 #
+b1001 "
+b110 !
+$end
+#20
+b1100 !
+b1100 0
+b1100 1
+b10010 #
+b10010 (
+b10010 )
+b1111 "
+b1111 ,
+b1111 -
+b10010 $
+b10010 &
+b10010 *
+b10010 .
+#60
+b10010 "
+b10010 ,
+b10010 -
+b11000 #
+b11000 (
+b11000 )
+b11000 %
+b11000 '
+b11000 +
+b11000 /
+b1100 $
+b1100 &
+b1100 *
+b1100 .
+#160
