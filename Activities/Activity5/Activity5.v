@@ -43,18 +43,66 @@ module memory(input [31:0] currPC, output reg[31:0] inst);
 endmodule
 
 /////////////// Control /////////////
-module control(input [31:0] inst, output reg jumpOut);
+module control(input [31:0] inst, output reg [10:0] jumpOut);
 
-	initial
-	begin
-		jumpOut = 0;
-	end
-	always @(*) begin
-		case(inst[31:26]) 
-			6'h2: jumpOut =1;
-			default: jumpOut = 0;
+	reg regDst;
+  	reg jump;
+  	reg branch;
+  	reg memRead;
+  	reg memToReg;
+  	reg [2:0] ALUOp ;
+  	reg regWrite;   
+  	reg ALUsrc;
+  	reg memWrite;
+
+  	initial
+  	begin
+    	regDst = 0;
+    	jump = 0;
+    	branch = 0;
+    	memRead = 0;
+    	memToReg = 0;
+    	ALUOp = 3'b000;
+    	regWrite = 0;   
+    	ALUsrc = 0;
+    	memWrit
+  	
+  	end 
+  	
+
+	always @(inst) begin
+  		$display ("opcode = ", inst[`op]);
+  		$display ("functioncode= ", inst[`function]);
 		
-		case()
+		//Jump Instructions
+		case(inst[`op])
+			`J || `JR ||`JAL:
+			begin
+				$display("This is a Jump instruction.")	
+				6'h2: jumpOut =1;
+				default: jumpOut = 0;
+			end
+		//R-Type Instructions
+			regDst = 1; regWrite =1;
+			case(inst[`function])
+				//And
+          		6'b100100:
+          			ALUOp = 3'b000;
+          		//Or
+          		6'b100101:
+          			ALUOp = 3'b001;
+				//Add 
+				6'b100000: 
+            		ALUOp = 3'b010;
+          		//Sub
+          		6'b100010
+
+
+
+
+		//regDst
+		case(inst[31:26] == )
+		
 		endcase; 
 
 
