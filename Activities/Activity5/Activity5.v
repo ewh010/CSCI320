@@ -43,14 +43,15 @@ module memory(input [31:0] currPC, output reg[31:0] inst);
 endmodule
 
 /////////////// Control /////////////
-module control(input [31:0] inst, output reg [10:0] jumpOut);
-
+module control(input [31:0] inst, output reg [10:0] outSignal);
 	reg regDst;
   	reg jump;
   	reg branch;
+
   	reg memRead;
   	reg memToReg;
-  	reg [2:0] ALUOp ;
+
+  	reg [2:0] ALUOp;
   	reg regWrite;   
   	reg ALUsrc;
   	reg memWrite;
@@ -60,8 +61,10 @@ module control(input [31:0] inst, output reg [10:0] jumpOut);
     	regDst = 0;
     	jump = 0;
     	branch = 0;
+
     	memRead = 0;
     	memToReg = 0;
+
     	ALUOp = 3'b000;
     	regWrite = 0;   
     	ALUsrc = 0;
@@ -78,13 +81,17 @@ module control(input [31:0] inst, output reg [10:0] jumpOut);
 		case(inst[`op])
 			`J || `JR ||`JAL:
 			begin
-				$display("This is a Jump instruction.")	
+				$display("This is a Jump instruction")	
 				6'h2: jumpOut =1;
 				default: jumpOut = 0;
 			end
-		//R-Type Instructions
-			regDst = 1; regWrite =1;
-			case(inst[`function])
+
+		//R-Type Instructions	
+			`SPECIAL:
+			begin
+				regWrite = 1; regDst =1;
+				$display("This is an R-Type instruction");
+				case(inst[`function])
 				//And
           		6'b100100:
           			ALUOp = 3'b000;
@@ -95,17 +102,53 @@ module control(input [31:0] inst, output reg [10:0] jumpOut);
 				6'b100000: 
             		ALUOp = 3'b010;
           		//Sub
-          		6'b100010
+          		6'b100010:
+          			ALUOp = 3'b110;
+          		//slt
+          		6'b101010:
+          			ALUOp = 3'b111;
+          		default:
+          			$display("R-Type Error");
+          		endcase
+          	end
+          	//ADDI and ORI
+          	`ADDI || `ORI:
+          	begin
+          		$display("These are ADDI or ORI instructions");
+          		regWrite =1; 
+          		ALUOp = 3'b010; 
+          		ALUsrc =1;
+          	end
+          	begin
+          	//BEQ and BNE
+          	`BEQ || `BNE:
+          	begin
+          		$display("These are BEQ or BNE instructions");
+          		branch = 1; 
+          		ALUop = 3'b110;
+          	end
+          	//Load Word
+          	`LW:
+          	begin
+          		$display("This is a LW instruction");
+          		memRead = 1; memToReg = 1;
+          		ALUOp = 3'b010; 
+          		ALUsrc = 1;
+          		regWrite = 1; 
+          	end
+          	//Store Word
+          	`SW:
+          	begin
+          		$display("This is a SW instruction");
+          		ALUop = 3'b010; 
+          		ALUsrc = 1;
+          		memWrite = 1;
+          	end
 
-
-
-
-		//regDst
-		case(inst[31:26] == )
-		
-		endcase; 
-
-
+          	default:
+          		$display("This command can't be completed");
+    	endcase
+    	signals = {regDst, jump, branch, memRead, memToReg, ALUOp, regWrite, ALUsrc, memWrite};
 	end
 
 endmodule
@@ -133,10 +176,9 @@ wire [31:0] currPC;
 wire [31:0] inst;
 wire [31:0] jumpAddr;
 wire [31:0] PCplus4;
-wire jumpOut;
-
-
+wire [10:0] outSignal;
 reg clock = 0;
+reg jumpOut = signals[9];
 
 pc testPC(clock, nextPC, currPC);
 add4 adder(currPC, PCplus4);
