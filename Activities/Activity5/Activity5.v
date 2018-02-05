@@ -78,36 +78,36 @@ module control(input [31:0] inst, output reg [10:0] outSignal);
 		
 		//Jump Instructions
 		case(inst[`op])
-			`J || `JR ||`JAL:
+			`J ,`JAL:
 			begin
 				$display("This is a Jump instruction");
-				6'h2: jumpOut =1;
-				default: jumpOut = 0;
+				6'h2: jump =1;
+//				default: jumpOut = 0;
 			end
-
+			
 		//R-Type Instructions	
 			`SPECIAL:
 			begin
 				regWrite = 1; regDst =1;
 				$display("This is an R-Type instruction");
 				case(inst[`function])
-				//And
-          		6'b100100:
-          			ALUOp = 3'b000;
-          		//Or
-          		6'b100101:
-          			ALUOp = 3'b001;
-				//Add 
-				6'b100000: 
-            		ALUOp = 3'b010;
-          		//Sub
-          		6'b100010:
-          			ALUOp = 3'b110;
-          		//slt
-          		6'b101010:
-          			ALUOp = 3'b111;
+					`AND: begin 
+          				ALUOp = 3'b000;
+          			end
+          			`Or: begin
+          				ALUOp = 3'b001;
+					end
+					`ADD: begin 
+            			ALUOp = 3'b010;
+            		end
+          			`SUB: begin
+          				ALUOp = 3'b110;
+          			end
+          			`SLT: begin
+          				ALUOp = 3'b111;
+          			end
           		default:
-          			$display("R-Type Error");
+          			$display("This is an R-Type Error");
           		endcase
           	end
           	//ADDI and ORI
