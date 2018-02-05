@@ -69,6 +69,11 @@ module control(input [31:0] inst, output reg [10:0] outSignal);
     	regWrite = 0;   
     	ALUsrc = 0;
     	memWrit = 0;
+<<<<<<< HEAD
+=======
+	   
+  	
+>>>>>>> 84f23e070a8241744f81fa09857353b01137c215
   	end 
   	
 
@@ -80,7 +85,11 @@ module control(input [31:0] inst, output reg [10:0] outSignal);
 		case(inst[`op])
 			`J || `JR ||`JAL:
 			begin
+<<<<<<< HEAD
 				$display("This is a Jump instruction");	
+=======
+			   $display("This is a Jump instruction");	
+>>>>>>> 84f23e070a8241744f81fa09857353b01137c215
 				6'h2: jumpOut =1;
 				default: jumpOut = 0;
 			end
