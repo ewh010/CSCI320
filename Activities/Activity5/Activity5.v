@@ -76,15 +76,23 @@ module control(input [31:0] inst, output reg [10:0] outSignal);
   		$display ("opcode = ", inst[`op]);
   		$display ("functioncode= ", inst[`function]);
 		
-		//Jump Instructions
+		//Jump and Jump and Link Instructions
 		case(inst[`op])
 			`J ,`JAL:
 			begin
-				$display("This is a Jump instruction");
-				6'h2: jump =1;
+				$display("This is a Jump or Jump and Link instruction");
+				jump =1;
 //				default: jumpOut = 0;
 			end
-			
+		
+    //Jump Register
+      `JR:
+      begin
+        $display("This is a JR instruction");
+        jump = 1; regWrite =1;
+
+      end	
+
 		//R-Type Instructions	
 			`SPECIAL:
 			begin
@@ -92,24 +100,24 @@ module control(input [31:0] inst, output reg [10:0] outSignal);
 				$display("This is an R-Type instruction");
 				case(inst[`function])
 					`AND: begin 
-          				ALUOp = 3'b000;
-          			end
-          			`Or: begin
-          				ALUOp = 3'b001;
+          	ALUOp = 3'b000;
+          end
+          `OR: begin
+          	ALUOp = 3'b001;
 					end
 					`ADD: begin 
-            			ALUOp = 3'b010;
-            		end
-          			`SUB: begin
-          				ALUOp = 3'b110;
-          			end
-          			`SLT: begin
-          				ALUOp = 3'b111;
-          			end
-          		default:
-          			$display("This is an R-Type Error");
-          		endcase
-          	end
+            ALUOp = 3'b010;
+          end
+          `SUB: begin
+          	ALUOp = 3'b110;
+          end
+          `SLT: begin
+          	ALUOp = 3'b111;
+          end
+          default:
+          	$display("This is an R-Type Error");
+        endcase
+      end
           	//ADDI and ORI
           	`ADDI || `ORI:
           	begin
@@ -139,14 +147,16 @@ module control(input [31:0] inst, output reg [10:0] outSignal);
           	`SW:
           	begin
           		$display("This is a SW instruction");
-          		ALUop = 3'b010; 
-          		ALUsrc = 1;
-          		memWrite = 1;
+          		ALUOp = 3'b010;
+              ALUsrc = 1;
+              regWrite =1;
           	end
 
           	default:
           		$display("This command can't be completed");
     	endcase
+
+      $monitor()
     	signals = {regDst, jump, branch, memRead, memToReg, ALUOp, regWrite, ALUsrc, memWrite};
 	end
 

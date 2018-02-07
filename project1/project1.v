@@ -1,6 +1,7 @@
-/* Activity 4: PC/Adder/Memory and Jump/ Control
-January 25, 2018
+/* Activity 5: Jump cont.
+January 31, 2018
 */
+
 `include "mips.h"
 
 //////////// PC //////////////
@@ -42,23 +43,124 @@ module memory(input [31:0] currPC, output reg[31:0] inst);
 endmodule
 
 /////////////// Control /////////////
-module control(input [31:0] inst, output reg jumpOut);
+module control(input [31:0] inst, output reg [10:0] outSignal);
+	reg regDst;
+  	reg jump;
+  	reg branch;
 
-	initial
-	begin
-		jumpOut = 0;
-	end
-	always @(*) begin
-		case(inst[31:26]) 
-			6'h2: jumpOut =1;
-			default: jumpOut = 0;
-		endcase; 
+  	reg memRead;
+  	reg memToReg;
+
+  	reg [2:0] ALUOp;
+  	reg regWrite;   
+  	reg ALUsrc;
+  	reg memWrite;
+
+  	initial
+  	begin
+    	regDst = 0;
+    	jump = 0;
+    	branch = 0;
+
+    	memRead = 0;
+    	memToReg = 0;
+
+    	ALUOp = 3'b000;
+    	regWrite = 0;   
+    	ALUsrc = 0;
+    	memWrit = 0;
+  	end 
+  	
+
+	always @(inst) begin
+  		$display ("opcode = ", inst[`op]);
+  		$display ("functioncode= ", inst[`function]);
 		
+		//Jump and Jump and Link Instructions
+		case(inst[`op])
+			`J ,`JAL:
+			begin
+				$display("This is a Jump or Jump and Link instruction");
+				jump =1;
+//				default: jumpOut = 0;
+			end
+		
+    //Jump Register
+      `JR:
+      begin
+        $display("This is a JR instruction");
+        jump = 1; regWrite =1;
 
+      end	
+
+		//R-Type Instructions	
+			`SPECIAL:
+			begin
+				regWrite = 1; regDst =1;
+				$display("This is an R-Type instruction");
+				case(inst[`function])
+					`AND: begin 
+          	ALUOp = 3'b000;
+          end
+          `OR: begin
+          	ALUOp = 3'b001;
+					end
+					`ADD: begin 
+            ALUOp = 3'b010;
+          end
+          `SUB: begin
+          	ALUOp = 3'b110;
+          end
+          `SLT: begin
+          	ALUOp = 3'b111;
+          end
+          default:
+          	$display("This is an R-Type Error");
+        endcase
+      end
+          	//ADDI and ORI
+          	`ADDI || `ORI:
+          	begin
+          		$display("These are ADDI or ORI instructions");
+          		regWrite =1; 
+          		ALUOp = 3'b010; 
+          		ALUsrc =1;
+          	end
+          	begin
+          	//BEQ and BNE
+          	`BEQ || `BNE:
+          	begin
+          		$display("These are BEQ or BNE instructions");
+          		branch = 1; 
+          		ALUop = 3'b110;
+          	end
+          	//Load Word
+          	`LW:
+          	begin
+          		$display("This is a LW instruction");
+          		memRead = 1; memToReg = 1;
+          		ALUOp = 3'b010; 
+          		ALUsrc = 1;
+          		regWrite = 1; 
+          	end
+          	//Store Word
+          	`SW:
+          	begin
+          		$display("This is a SW instruction");
+          		ALUOp = 3'b010;
+              ALUsrc = 1;
+              regWrite =1;
+          	end
+
+          	default:
+          		$display("This command can't be completed");
+    	endcase
+
+      $monitor()
+    	signals = {regDst, jump, branch, memRead, memToReg, ALUOp, regWrite, ALUsrc, memWrite};
 	end
 
 endmodule
-
 
 /////////////// Calculate Jump Address
 module calculateJumpAddress(input [31:0] PCplus4, input [31:0] inst, output wire [31:0] jumpAddr);
@@ -75,6 +177,7 @@ module mux2to1Bit(input jumpOut, input [31:0] jumpAddr, input [31:0] PCplus4, ou
 	end
 
 endmodule
+
 //////////// TestBench /////////////
 module testbench;
 wire [31:0] nextPC;
@@ -82,10 +185,9 @@ wire [31:0] currPC;
 wire [31:0] inst;
 wire [31:0] jumpAddr;
 wire [31:0] PCplus4;
-wire jumpOut;
-
-
+wire [10:0] outSignal;
 reg clock = 0;
+reg jumpOut = signals[9];
 
 pc testPC(clock, nextPC, currPC);
 add4 adder(currPC, PCplus4);
