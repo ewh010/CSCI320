@@ -151,6 +151,8 @@ module control(input [31:0] inst, output reg [10:0] outSignal);
               ALUsrc = 1;
               regWrite =1;
           	end
+        //  `SYSCALL
+
 
           	default:
           		$display("This command can't be completed");
@@ -162,7 +164,19 @@ module control(input [31:0] inst, output reg [10:0] outSignal);
 
 endmodule
 
-/////////////// Calculate Jump Address
+/////////////// ALU //////////////////
+module ReadDataALU(input [31:0] readData1, input [31:0] signExtend, input [2:0] ALUOp output Zero, output [31:0] address);
+
+always @(*) begin
+case(_____ALUControl_____)
+
+
+
+end
+
+endmodule
+
+/////////////// Calculate Jump Address /////////////////
 module calculateJumpAddress(input [31:0] PCplus4, input [31:0] inst, output wire [31:0] jumpAddr);
 	assign jumpAddr = {PCplus4[31:28], inst[25:0] << 2};
 endmodule
