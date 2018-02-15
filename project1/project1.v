@@ -26,7 +26,7 @@ endmodule
 
 ///////////// Memory /////////////
 module memory(input [31:0] currPC, output reg[31:0] inst); 
-	reg [31:0] mem[30'h00100000:30'h00100003];	
+	reg [31:0] mem[29'h00100000:29'h00100100];	
 
 	initial
 	begin
@@ -55,12 +55,6 @@ module control(input [31:0] inst, output reg syscall, output reg [10:0] outSigna
   reg regWrite;   
   reg ALUsrc;
   reg memWrite;
-
-  	initial
-  	begin
-
-  	end 
-  	
 
 	always @(inst) begin
     regDst = 0;
@@ -134,8 +128,7 @@ module control(input [31:0] inst, output reg syscall, output reg [10:0] outSigna
           		regWrite =1; 
           		ALUOp = 3'b010; 
           		ALUsrc =1;
-          	end
-          	begin        
+          	end       
           	//BEQ and BNE
           	`BEQ ||`BNE:
           	begin
@@ -178,20 +171,20 @@ always @(readData1 or signExtend or ALUOp) begin
   if (ALUOp == 3'b000)begin
     address = readData1 & signExtend;
     if (address == 32'h0000)begin
-      Zero = 1'b1
+      Zero = 1'b1;
     end
     else begin
-      Zero = 1'b0
+      Zero = 1'b0;
     end
   end
   // Or //
   if (ALUOp == 3'b001) begin
     address = readData1 | signExtend;
     if (address == 32'h0000)begin
-      Zero = 1'b1
+      Zero = 1'b1;
     end
     else begin
-      Zero = 1'b0
+      Zero = 1'b0;
     end
   end
 
@@ -199,10 +192,10 @@ always @(readData1 or signExtend or ALUOp) begin
   if (ALUOp == 3'b010)begin
     address = readData1+signExtend;
     if (address == 32'h0000)begin
-      Zero = 1'b1 
+      Zero = 1'b1;
     end
     else begin
-      Zero = 1'b0
+      Zero = 1'b0;
     end
   end  
 
@@ -210,20 +203,20 @@ always @(readData1 or signExtend or ALUOp) begin
   if (ALUOp == 3'b110)begin
     address = readData1 - signExtend;
     if (address == 32'h0000)begin
-      Zero = 1'b1
+      Zero = 1'b1;
     end
     else begin
-      Zero = 1'b0
+      Zero = 1'b0;
     end
   end
 
   // SLT // 
   if (ALUOp == 3'b111) begin
     if (readData1 < readData2)begin
-      Zero = 1'b1
+      Zero = 1'b1;
     end
     if (readData2 < readData1)begin
-      Zero = 1'b0
+      Zero = 1'b0;
     end
   end
 end
@@ -231,8 +224,9 @@ end
 endmodule
 
 /////////////// Register module /////////////////////
-module registers(input clock, input [4:0] readRegister1, input [4:0] readRegister2, input [4:0] writeRegister, input [31:0] writeData, input regWrite, output reg [31:0] readData1, output reg [31:0] readData2, output wire [31:0] v0, output wire [31:0] a0)
-reg [31:0] allRegisters[0:31];
+module registers(input clock, input [4:0] readRegister1, input [4:0] readRegister2, input [4:0] writeRegister, input [31:0] writeData, input regWrite, output reg [31:0] readData1, output reg [31:0] readData2, output wire [31:0] v0, output wire [31:0] a0);
+
+reg [31:0] allRegisters [0:31];
 integer j;
 
 initial begin
@@ -273,7 +267,7 @@ module mux2to1Bit(input jumpOut, input [31:0] jumpAddr, input [31:0] PCplus4, ou
 endmodule
 
 ///////////// register mux /////////////
-module registerMux(input [31:0] outSignal, input [4:0] input1, input [4:0] input2, output reg [4:0] muxOut2)
+module registerMux(input [31:0] outSignal, input [4:0] input1, input [4:0] input2, output reg [4:0] muxOut2);
 always @(*)
 begin
   if (outSignal == 0)
@@ -339,7 +333,7 @@ mux2to1Bit muxJump(jumpOut,jumpAddr,PCplus4, nextPC);
 mux2to1Bit muxALU(outSignal[1], readData2, signExtend, aluMuxOut);
 registerMux muxReg(outSignal[10], inst[20:16],inst[15:11],writeRegister); //done
 ReadDataALU ALU(readData1, signExtend, )
-signExtend signExtended(inst[15:0],signExtend) //done
+signExtend signExtended(inst[15:0],signExtend); //done
 syscalls Syscall(syscallControl, v0, a0); //done
 
 always begin
