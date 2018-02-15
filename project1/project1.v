@@ -2,7 +2,7 @@
 January 31, 2018
 */
 
-`include "../mips.h"
+`include "mips.h"
 
 //////////// PC //////////////
 module pc(input clock, input [31:0] nextPC, output reg[31:0] currPC);
@@ -128,16 +128,16 @@ module control(input [31:0] inst, output reg syscall, output reg [10:0] outSigna
         endcase
       end
           	//ADDI and ORI
-          	`ADDI || `ORI:
+          	`ADDI ||`ORI:
           	begin
           		$display("These are ADDI or ORI instructions");
           		regWrite =1; 
           		ALUOp = 3'b010; 
           		ALUsrc =1;
           	end
-          	begin
+          	begin        
           	//BEQ and BNE
-          	`BEQ || `BNE:
+          	`BEQ ||`BNE:
           	begin
           		$display("These are BEQ or BNE instructions");
           		branch = 1; 
