@@ -2,6 +2,9 @@
 // CSCI320
 // Project 1 
 module alu(input [31:0] data1, input [31:0] data2, input [2:0] ALUOp, output reg [31:0] ALUResult, output reg Zero);
+initial begin
+  Zero = 1'b0;
+end
 always @(*) begin
   // And //
   if (ALUOp == 3'b000)begin

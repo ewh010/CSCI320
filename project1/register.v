@@ -25,12 +25,15 @@ module register(input clock, input jalControl, input[31:0] jalAddress, input [4:
   end
 
   always @(negedge clock) begin
+    //$display("address in ra = %x", register[`ra]);
     if ((writeReg != `zero) & (RegWrite == 1)) begin
       if (jalControl == 1) begin
+          $display("Writing to ra this value: %x", jalAddress);
           register[`ra] = jalAddress;
         end
       else begin
-          register[writeReg] = writeData;
+          if (writeReg != `ra)
+            register[writeReg] = writeData;
         end
     end
   end

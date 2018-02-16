@@ -28,7 +28,7 @@ module control(input [31:0] inst, output reg syscallControl, output reg jrContro
     jrControl = 0;
     jalControl = 0;
 
-    $display("I'm trying to learn what op is %6b and the function code %6b", inst[`op], inst[`function]);
+    //$display("I'm trying to learn what op is %6b and the function code %6b", inst[`op], inst[`function]);
     case (inst[`op])
       `J:
         begin
@@ -85,6 +85,7 @@ module control(input [31:0] inst, output reg syscallControl, output reg jrContro
             `SLT:
               ALUOp = 3'b111;
             `JR: begin
+              $display("We at JR");
               Jump = 1; RegWrite = 1; jrControl = 1;
             end
             `SYSCALL:

@@ -14,5 +14,9 @@ module memory(input [31:0] currPC, output reg [31:0] inst);
 
     always @(currPC) begin
         inst = mem[currPC[31:2]];
+        // if (inst == 32'bx) begin
+        // 	$display("No instruction found. ");
+        // 	$finish;
+        // end
     end
 endmodule

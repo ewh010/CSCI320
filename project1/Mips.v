@@ -71,7 +71,7 @@ module testbench;
     // execution for the ALU block
     alu ALUBlock(readData1, aluMuxOut, controlSig[`ALUOP], ALUResult, Zero);
     // Logical And Gate used in MUX
-    and andOPGate(controlSig[`BRANCH], Zero, andOut);
+    andOp andOPGate(controlSig[`BRANCH], Zero, andOut);
     //mux for Branch Bontrol block
     mux2to1 muxBranch(andOut, PCplus4,branchAdderOut,branch_mux_out);
     //mux for Jump Control 
@@ -96,7 +96,7 @@ module testbench;
         $dumpfile("testbench.vcd");
         $dumpvars(0,testbench);
         $monitor($time, "in %m, currPC %08x, nextPC = %08x, inst =%08x, jumpAddr =%08x, PCplus4 =%08x", currPC, nextPC, inst, jumpAddr, PCplus4);
-        #50000 $finish;
+        #500000 $finish;
     end
 endmodule
 
