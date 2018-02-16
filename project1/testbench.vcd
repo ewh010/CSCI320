@@ -1,5 +1,5 @@
 $date
-	Fri Feb 16 08:23:57 2018
+	Fri Feb 16 09:48:58 2018
 $end
 $version
 	Icarus Verilog
@@ -19,34 +19,34 @@ $var wire 32 ( readData_mem [31:0] $end
 $var wire 32 ) readData2 [31:0] $end
 $var wire 32 * readData1 [31:0] $end
 $var wire 32 + ra [31:0] $end
-$var wire 32 , pcPlus4 [31:0] $end
-$var wire 32 - nextPC [31:0] $end
-$var wire 32 . jumpAddr [31:0] $end
-$var wire 32 / jrMux_out [31:0] $end
-$var wire 1 0 jrControl $end
-$var wire 1 1 jalControl $end
-$var wire 32 2 inst [31:0] $end
-$var wire 32 3 currPC [31:0] $end
-$var wire 32 4 branch_mux_out [31:0] $end
-$var wire 32 5 branchAdderOut [31:0] $end
-$var wire 32 6 aluResult [31:0] $end
-$var wire 32 7 aluMuxOut [31:0] $end
-$var wire 32 8 a0 [31:0] $end
-$var wire 1 9 Zero $end
+$var wire 32 , nextPC [31:0] $end
+$var wire 32 - jumpAddr [31:0] $end
+$var wire 32 . jrMux_out [31:0] $end
+$var wire 1 / jrControl $end
+$var wire 1 0 jalControl $end
+$var wire 32 1 inst [31:0] $end
+$var wire 32 2 currPC [31:0] $end
+$var wire 32 3 branch_mux_out [31:0] $end
+$var wire 32 4 branchAdderOut [31:0] $end
+$var wire 32 5 aluMuxOut [31:0] $end
+$var wire 32 6 a0 [31:0] $end
+$var wire 1 7 Zero $end
+$var wire 32 8 PCplus4 [31:0] $end
+$var wire 32 9 ALUResult [31:0] $end
 $var reg 1 : clock $end
 $scope module ALUBlock $end
 $var wire 3 ; ALUOp [2:0] $end
 $var wire 32 < data2 [31:0] $end
 $var wire 32 = data1 [31:0] $end
-$var reg 1 9 Zero $end
-$var reg 32 > address [31:0] $end
+$var reg 32 > ALUResult [31:0] $end
+$var reg 1 7 Zero $end
 $upscope $end
 $scope module add4PC $end
 $var wire 32 ? currPC [31:0] $end
 $var wire 32 @ PCplus4 [31:0] $end
 $upscope $end
 $scope module branchAddressAdder $end
-$var wire 32 A pcPlus4 [31:0] $end
+$var wire 32 A PCplus4 [31:0] $end
 $var wire 32 B signExtImmediate [31:0] $end
 $var reg 32 C out [31:0] $end
 $upscope $end
@@ -62,8 +62,8 @@ $var reg 1 K MemWrite $end
 $var reg 1 L RegDst $end
 $var reg 1 M RegWrite $end
 $var reg 11 N controlSig [10:0] $end
-$var reg 1 1 jalControl $end
-$var reg 1 0 jrControl $end
+$var reg 1 0 jalControl $end
+$var reg 1 / jrControl $end
 $var reg 1 & syscallControl $end
 $upscope $end
 $scope module dataMemory $end
@@ -79,7 +79,7 @@ $var wire 32 T currPC [31:0] $end
 $var reg 32 U inst [31:0] $end
 $upscope $end
 $scope module jrMux $end
-$var wire 1 0 select $end
+$var wire 1 / select $end
 $var wire 32 V muxIn2 [31:0] $end
 $var wire 32 W muxIn1 [31:0] $end
 $var reg 32 X muxOut [31:0] $end
@@ -123,7 +123,7 @@ $var wire 1 m RegWrite $end
 $var wire 32 n a0 [31:0] $end
 $var wire 1 : clock $end
 $var wire 32 o jalAddress [31:0] $end
-$var wire 1 1 jalControl $end
+$var wire 1 0 jalControl $end
 $var wire 32 p ra [31:0] $end
 $var wire 5 q readRegister1 [4:0] $end
 $var wire 5 r readRegister2 [4:0] $end
@@ -148,118 +148,184 @@ $upscope $end
 $enddefinitions $end
 #0
 $dumpvars
-bx ~
-bx }
-bx |
-x{
-bx z
-bx y
+b111111111111111 ~
+b111100000111010111111111111111 }
+b11101 |
+0{
+b1111 z
+b11101 y
 b100000 x
-bx w
-bx v
-bx u
+b0 w
+b0 v
+b11101 u
 bx t
 b0 s
-bx r
-bx q
+b11101 r
+b0 q
 b0 p
 b10000000000000000101000 o
 b0 n
-xm
+1m
 b10000000000000000100000 l
-b0 k
-b0 j
-xi
-b0 h
-bx g
-bx f
-bx e
+b10000100000000000100000 k
+b10000100000000000100000 j
+0i
+b11101011111111111111100 h
+b10000100000000000100000 g
+b10000100000000000100000 f
+b10000100000000000100000 e
 b10000000000000000100100 d
-bx c
-bx b
-bx a
-x`
+b111111111111111 c
+b0 b
+b111111111111111 a
+1`
 bx _
-x^
+0^
 bx ]
 bx \
-b0xxxxxxxxxxxxxxxxxxxxxxxx00 [
-bx Z
+b11101011111111111111100 [
+b111100000111010111111111111111 Z
 b10000000000000000100100 Y
-b0 X
-b0xxxxxxxxxxxxxxxxxxxxxxxx00 W
+b11101011111111111111100 X
+b11101011111111111111100 W
 b0 V
-bx U
+b111100000111010111111111111111 U
 b10000000000000000100000 T
 bx S
-bx R
-xQ
-xP
+b0 R
+0Q
+0P
 bx O
-bx N
-xM
-xL
-xK
-xJ
-xI
-xH
-xG
-xF
-bx E
-bx D
-bx C
-bx B
+b11110 N
+1M
+0L
+0K
+0J
+0I
+0H
+0G
+1F
+b11 E
+b111100000111010111111111111111 D
+b10000100000000000100000 C
+b111111111111111 B
 b10000000000000000100100 A
 b10000000000000000100100 @
 b10000000000000000100000 ?
 bx >
-bx =
-bx <
-bx ;
+b0 =
+b111111111111111 <
+b11 ;
 1:
-x9
-b0 8
-bx 7
-bx 6
-bx 5
-bx 4
-b10000000000000000100000 3
-bx 2
-x1
-x0
-b0 /
-b0xxxxxxxxxxxxxxxxxxxxxxxx00 .
-b0 -
-b10000000000000000100100 ,
+bx 9
+b10000000000000000100100 8
+x7
+b0 6
+b111111111111111 5
+b10000100000000000100000 4
+b10000100000000000100000 3
+b10000000000000000100000 2
+b111100000111010111111111111111 1
+00
+0/
+b11101011111111111111100 .
+b11101011111111111111100 -
+b10000100000000000100000 ,
 b0 +
-bx *
-bx )
+b0 *
+b0 )
 bx (
-bx '
-x&
+b111111111111111 '
+0&
 b0 %
 bx $
-bx #
-bx "
+b11101 #
+b0x00011110 "
 z!
 $end
 #10
 0:
 #20
-b100 ,
-b100 @
-b100 A
-b100 Y
-b100 d
-b1000 o
-b0 3
-b0 ?
-b0 T
-b0 l
+b0xxxxxxxxxxxxxxxxxxxxxxxx00 .
+b0xxxxxxxxxxxxxxxxxxxxxxxx00 X
+b0xxxxxxxxxxxxxxxxxxxxxxxx00 h
+07
+bx ,
+bx j
+bx k
+b0xxxxxxxxxxxxxxxxxxxxxxxx00 -
+b0xxxxxxxxxxxxxxxxxxxxxxxx00 W
+b0xxxxxxxxxxxxxxxxxxxxxxxx00 [
+bx )
+bx R
+bx b
+bx w
+bx *
+bx =
+bx v
+bx #
+bx u
+bx |
+0m
+0`
+b0 ;
+bx 5
+bx <
+bx c
+bx 3
+bx f
+bx g
+bx r
+bx q
+bx z
+bx y
+b0 "
+b0 N
+0F
+0M
+b0 E
+bx '
+bx B
+bx a
+bx ~
+bx 4
+bx C
+bx e
+bx 1
+bx D
+bx U
+bx Z
+bx }
+b10000100000000000100100 8
+b10000100000000000100100 @
+b10000100000000000100100 A
+b10000100000000000100100 Y
+b10000100000000000100100 d
+b10000100000000000101000 o
+b10000100000000000100000 2
+b10000100000000000100000 ?
+b10000100000000000100000 T
+b10000100000000000100000 l
 1:
 #30
 0:
 #40
+b0xxxxxxxxxxxxxxxxxxxxxxxxxxxx00 .
+b0xxxxxxxxxxxxxxxxxxxxxxxxxxxx00 X
+b0xxxxxxxxxxxxxxxxxxxxxxxxxxxx00 h
+b0xxxxxxxxxxxxxxxxxxxxxxxxxxxx00 -
+b0xxxxxxxxxxxxxxxxxxxxxxxxxxxx00 W
+b0xxxxxxxxxxxxxxxxxxxxxxxxxxxx00 [
+bx 8
+bx @
+bx A
+bx Y
+bx d
+bx o
+bx 2
+bx ?
+bx T
+bx l
 1:
 #50
 0:

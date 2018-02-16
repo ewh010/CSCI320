@@ -8,7 +8,7 @@ module memory(input [31:0] currPC, output reg [31:0] inst);
     reg [31:0] mem[29'h00100000:29'h00100100];
 
     initial begin
-        $readmemh("./Fibo/fibonacciNew.v", mem);
+        $readmemh("./fibonacci/fibonacciRefined.v", mem);
         // $readmemh("add_test.v", mem);
     end
 

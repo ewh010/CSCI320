@@ -28,6 +28,7 @@ module control(input [31:0] inst, output reg syscallControl, output reg jrContro
     jrControl = 0;
     jalControl = 0;
 
+    $display("I'm trying to learn what op is %6b and the function code %6b", inst[`op], inst[`function]);
     case (inst[`op])
       `J:
         begin
@@ -94,15 +95,15 @@ module control(input [31:0] inst, output reg syscallControl, output reg jrContro
             6'b000000: 
             begin
               ALUOp = 3'bxxx;
+              $display("This is a NOP");
             end
 
             default:
-              $display("R Instruction Not Listed\n");
-          endcase
-        end
-
-      default:
-        $display("Instruction Not Found\n");
+              $display("R Instruction can't be found\n");
+            endcase
+        end       
+        default:
+          $display("Instruction Not Found\n");
 
     endcase
 

@@ -11,6 +11,7 @@ end
 always @(posedge clock) begin
     if($time != 0)
     begin
+  //  	$display("i am about the change to the next PC %31b", )
       currPC = nextPC;
     end
 end
