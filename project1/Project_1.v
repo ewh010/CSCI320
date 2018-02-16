@@ -1,129 +1,106 @@
+/* Activity 5: Jump cont.
+January 31, 2018
+*/
+
 `include "mips.h"
 
-/* pc module
- * 
- */
-module pc(input clk, input [31:0] nextPC, output reg [31:0] currPC);
-
-initial
-begin
-    currPC = 32'h00400020;
+//////////// PC //////////////
+module pc(input clock, input [31:0] nextPC, output reg [31:0] currPC);
+initial begin
+  currPC = 32'h00400020;
 end
 
-always @(posedge clk)
-begin
-  if($time != 0)
+always @(posedge clock) begin
     currPC <= nextPC;
 end
-
 endmodule
 
-
-/* add4 module
- *
- */
-module add4(input [31:0] currPC, output [31:0] PCplus4);
-
+///////////// adder /////////////
+module adder(input [31:0] currPC, output [31:0] PCplus4);
     assign PCplus4 = currPC + 4;
-
 endmodule
 
 
-/* memory module
- *
- */
-module memory(input [31:0] currPC, output reg [31:0] instr);
-
-    reg [31:0] mem[29'h00100000:29'h00100100];
-
-    initial begin
-        $readmemh("add_test.v", mem);
-    end
-
-    always @(currPC) begin
-        instr = mem[currPC[31:2]];
-    end
-
+////////////// Memory /////////////
+module memory(input [31:0] currPC, output reg [31:0] inst);
+  reg [31:0] mem[29'h00100000:29'h00100100];
+  initial begin
+    $readmemh("add_test.v", mem);
+  end
+  always @(currPC) begin
+    inst = mem[currPC[31:2]];
+  end
 endmodule
 
 
-/* getJumpAddr module
- *
- */
-module getJumpAddr(input [31:0] instr, input [31:0] PCplus4, output wire [31:0] jumpAddr);
-
-    assign jumpAddr = {PCplus4[31:28], instr[25:0] << 2};
-
+/////////////// Calculate Jump Address /////////////////
+module getJumpAddr(input [31:0] inst, input [31:0] PCplus4, output wire [31:0] jumpAddr);
+  assign jumpAddr = {PCplus4[31:28], inst[25:0] << 2};
 endmodule
 
-
-/* control module
- *
- */
-module control(input [31:0] instr,  output reg syscall, output reg [10:0] signals);
-
+/////////////// Control /////////////
+module control(input [31:0] inst,  output reg syscall, output reg [10:0] signals);
   reg regDst;
   reg jump;
   reg branch;
+
   reg memRead;
   reg memToReg;
-  reg [2:0] ALUop;
+  reg [2:0] ALUOp;
+
   reg regWrite;   
   reg ALUsrc;
   reg memWrite;
 
-  always @(instr)
-  begin
+  always @(inst) begin
     regDst = 0;
     jump = 0;
     branch = 0;
+
     memRead = 0;
     memToReg = 0;
-    ALUop = 3'b000;
+    ALUOp = 3'b000;
+
     regWrite = 0;   
     ALUsrc = 0;
     memWrite = 0;
- 
 
-    case (instr[`op])
-     `J, `JAL: begin
-        $display("jump instruction");
+    case (inst[`op])
+      `J, `JAL: begin
+        $display("This is a Jump of Jump and Link instruction");
         jump = 1;
       end
-      `SPECIAL:
-      begin
+      `SPECIAL: begin
         regDst = 1; regWrite = 1; 
-        case (instr[`function])
+        case (inst[`function])
+          //Add Instruction
           `ADD: begin
-	    $display("Add");
-            ALUop = 3'b010;
-	  end
+            ALUOp = 3'b010;
+            end
+          //Or Instruction
           `OR: begin
-	    $display("Or");
-            ALUop = 3'b001;
-	  end
+            ALUOp = 3'b001;
+            end
+          //And Instruction
           `AND: begin
-	    $display("And");
-            ALUop = 3'b000;
-	  end
+            ALUOp = 3'b000;
+            end
+          //Sub Instruction
           `SUB: begin
-	    $display("Sub");
-            ALUop = 3'b110;
-	  end
+            ALUOp = 3'b110;
+            end
           `SLT: begin 
-	    $display("Slt");
-            ALUop = 3'b111;
-	  end
-	  `JR: begin
-	    $display("Jump Register");
-	    jump = 1; regWrite = 1;
-	  end
-	  6'b000000: // nop
-	    $display("nop");
-	  `SYSCALL: begin
-	    $display("Syscall");
-            regDst = 0; jump = 0; branch = 0; memRead = 0; memToReg = 0; ALUop = 3'b000; regWrite = 0; ALUsrc = 0; memWrite = 0; syscall = 1;
-          end
+            ALUOp = 3'b111;
+            end
+          `JR: begin
+            jump = 1; regWrite = 1;
+            end
+          6'b000000:
+            $display("This is a NOP");
+          `SYSCALL: begin
+            $display("This is a Syscall");
+            regDst = 0; jump = 0; branch = 0; memRead = 0; memToReg = 0; ALUOp = 3'b000; regWrite = 0; ALUsrc = 0; memWrite = 0; syscall = 1;
+            end
           default:
             $display("R-type not yet completed\n");
         endcase
@@ -131,28 +108,28 @@ module control(input [31:0] instr,  output reg syscall, output reg [10:0] signal
       `BEQ, `BNE:
       begin
         $display("BEQ or BNE instruction");
-        branch = 1; ALUop = 3'b110;
+        branch = 1; ALUOp = 3'b110;
       end
       `ADDIU, `ADDI:
       begin
         $display("ADDI or ADDIU instruction");
-        regWrite = 1; ALUop = 3'b010; ALUsrc = 1;
+        regWrite = 1; ALUOp = 3'b010; ALUsrc = 1;
       end
       `LW:
       begin
         $display("LW instruction");
-        memRead = 1; memToReg = 1; ALUop = 3'b010; regWrite = 1; ALUsrc = 1;
+        memRead = 1; memToReg = 1; ALUOp = 3'b010; regWrite = 1; ALUsrc = 1;
       end
       `SW:
       begin
         $display("SW instruction");
-        ALUop = 3'b010; ALUsrc = 1; memWrite = 1;
+        ALUOp = 3'b010; ALUsrc = 1; memWrite = 1;
       end
       default:
         $display("Command has not been completed\n");
     endcase
   
-    signals = {regDst, jump, branch, memRead, memToReg, ALUop, regWrite, ALUsrc, memWrite};
+    signals = {regDst, jump, branch, memRead, memToReg, ALUOp, regWrite, ALUsrc, memWrite};
   
   end
 endmodule
@@ -261,6 +238,7 @@ endmodule
 module signExtend(input [15:0] immediate, output [31:0] extendedImmediate);
 
   assign extendedImmediate = { {16{immediate[15]}}, immediate };
+
 endmodule
 
 /* memory read write module
@@ -303,14 +281,16 @@ endmodule
 module testbench;
 wire [31:0] nextPC;
 wire [31:0] currPC;
-wire [31:0] instr;
+wire [31:0] inst;
 wire [31:0] PCplus4;
 wire [31:0] jumpAddr;
+
 wire [10:0] controlSignals;
 wire [31:0] writeData;
 wire [31:0] readData1;
 wire [31:0] readData2;
 wire [31:0] signExtendedValue;
+
 wire [31:0] aluResult;
 wire [31:0] aluMuxOut;
 wire [31:0] regV0;
@@ -318,34 +298,36 @@ wire [31:0] regA0;
 wire [4:0] writeReg;
 wire syscall_control;
 wire zero;
-reg clk = 1;
+reg clock = 1;
  // get current pc
- pc PC_block(clk, nextPC, currPC);
+ pc PC_block(clock, nextPC, currPC);
  // add 4 to pc for next pc
- add4 PCadd4(currPC, PCplus4);
+ adder PCadd4(currPC, PCplus4);
 // get instruction from memory
- memory instructionMemory(currPC, instr);
+ memory instructionMemory(currPC, inst);
+
  // calculate jump address
- getJumpAddr JumpAddr_block(instr, PCplus4, jumpAddr);
+ getJumpAddr JumpAddr_block(inst, PCplus4, jumpAddr);
+
   // get all control signals
- control control_block(instr, syscall_control, controlSignals);
+ control control_block(inst, syscall_control, controlSignals);
  // mux for write register
- regMux registerMux(controlSignals[10], instr[20:16], instr[15:11], writeReg);
+ regMux registerMux(controlSignals[10], inst[20:16], inst[15:11], writeReg);
  // execute registers block
- registers reg_block(clk, instr[25:21], instr[20:16], writeReg, writeData,controlSignals[4], readData1, readData2, regV0, regA0);
+ registers reg_block(clock, inst[25:21], inst[20:16], writeReg, writeData,controlSignals[4], readData1, readData2, regV0, regA0);
  // execute syscall if necessary
  callSys testSyscall(syscall_control, regV0, regA0);
   // mux for jump control
  mux jumpMux(1'b0, PCplus4, jumpAddr, nextPC);
  // sign extend the immediate
- signExtend signExtend_block(instr[15:0], signExtendedValue);
+ signExtend signExtend_block(inst[15:0], signExtendedValue);
  // mux for alu
  mux aluMux(controlSignals[1], readData2, signExtendedValue, aluMuxOut);
 
  // execute alu block
 alu ALU_block(readData1, aluMuxOut, controlSignals[5:3], writeData, zero);
  always begin
- #1 clk = ~clk;
+ #1 clock = ~clock;
  end
  initial
  begin

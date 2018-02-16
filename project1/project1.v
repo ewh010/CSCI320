@@ -9,11 +9,13 @@ module pc(input clock, input [31:0] nextPC, output reg[31:0] currPC);
 
 initial
 begin
-	currPC = 32'h00400000;
+	currPC = 32'h00400020;
 end
 
-always @(posedge clock) begin
-	currPC <= nextPC;
+always @(posedge clock)
+begin
+	if($time !=0)
+    currPC <= nextPC;
 end
 endmodule
 
@@ -28,29 +30,34 @@ endmodule
 module memory(input [31:0] currPC, output reg[31:0] inst); 
 	reg [31:0] mem[29'h00100000:29'h00100100];	
 
-	initial
-	begin
+	initial 
+  begin
 		$readmemh("add_test.v", mem);
 	end
 
 	always @(currPC) 
 	begin
 		inst = mem[currPC[31:2]];
-		if (inst == 0) begin
+/*		if (inst == 0) begin
 			$finish;
-		end
+		end*/
 	end
 endmodule
 
+/////////////// Calculate Jump Address /////////////////
+module calculateJumpAddress(input [31:0] inst, input [31:0] PCplus4, output wire [31:0] jumpAddr);
+  assign jumpAddr = {PCplus4[31:28], inst[25:0] << 2};
+endmodule
+
 /////////////// Control /////////////
-module control(input [31:0] inst, output reg syscall, output reg [10:0] outSignal);
+module control(input [31:0] inst, output reg syscall, output reg [10:0] signals);
   reg regDst;
   reg jump;
   reg branch;
   
   reg memRead;
   reg memToReg;
-  reg [2:0] ALUOp;
+  reg [2:0] ALUop;
     
   reg regWrite;   
   reg ALUsrc;
@@ -64,16 +71,16 @@ module control(input [31:0] inst, output reg syscall, output reg [10:0] outSigna
     memRead = 0;
     memToReg = 0;
 
-    ALUOp = 3'b000;
+    ALUop = 3'b000;
     regWrite = 0;   
     ALUsrc = 0;
-    memWrit = 0;
+    memWrite = 0;
 
 //  		$display ("opcode = ", inst[`op]);
 //  		$display ("functioncode= ", inst[`function]);
 		
 		//Jump and Jump and Link Instructions
-		case(inst[`op])
+/*		case(inst[`op])
 			`J ,`JAL:
 			begin
 				$display("This is a Jump or Jump and Link instruction");
@@ -134,7 +141,7 @@ module control(input [31:0] inst, output reg syscall, output reg [10:0] outSigna
           	begin
           		$display("These are BEQ or BNE instructions");
           		branch = 1; 
-          		ALUop = 3'b110;
+          		ALUOp = 3'b110;
           	end
           	//Load Word
           	`LW:
@@ -163,9 +170,108 @@ module control(input [31:0] inst, output reg syscall, output reg [10:0] outSigna
 	end
 
 endmodule
+*/
+
+case (instr[`op])
+      `J, `JAL: begin
+        $display("jump instruction");
+        jump = 1;
+      end
+      `SPECIAL: begin
+        regDst = 1; regWrite = 1; 
+        case (instr[`function])
+          `ADD: begin
+      $display("Add");
+            ALUop = 3'b010;
+    end
+          `OR: begin
+      $display("Or");
+            ALUop = 3'b001;
+    end
+          `AND: begin
+      $display("And");
+            ALUop = 3'b000;
+    end
+          `SUB: begin
+      $display("Sub");
+            ALUop = 3'b110;
+    end
+          `SLT: begin 
+      $display("Slt");
+            ALUop = 3'b111;
+    end
+    `JR: begin
+      $display("Jump Register");
+      jump = 1; regWrite = 1;
+    end
+    6'b000000: // nop
+      $display("nop");
+    `SYSCALL: begin
+      $display("Syscall");
+            regDst = 0; jump = 0; branch = 0; memRead = 0; memToReg = 0; ALUop = 3'b000; regWrite = 0; ALUsrc = 0; memWrite = 0; syscall = 1;
+          end
+          default:
+            $display("R-type not yet completed\n");
+        endcase
+      end
+      `BEQ, `BNE:
+      begin
+        $display("BEQ or BNE instruction");
+        branch = 1; ALUop = 3'b110;
+      end
+      `ADDIU, `ADDI:
+      begin
+        $display("ADDI or ADDIU instruction");
+        regWrite = 1; ALUop = 3'b010; ALUsrc = 1;
+      end
+      `LW:
+      begin
+        $display("LW instruction");
+        memRead = 1; memToReg = 1; ALUop = 3'b010; regWrite = 1; ALUsrc = 1;
+      end
+      `SW:
+      begin
+        $display("SW instruction");
+        ALUop = 3'b010; ALUsrc = 1; memWrite = 1;
+      end
+      default:
+        $display("Command has not been completed\n");
+    endcase
+  
+    signals = {regDst, jump, branch, memRead, memToReg, ALUop, regWrite, ALUsrc, memWrite};
+  
+  end
+endmodule
+
+
+
+
+
+////////////// mux 2-to-1 ///////////
+module mux2to1Bit(input controlSignal, input [31:0] input0, input [31:0] input1, output reg [31:0] muxOut);
+  always @(*)
+  begin 
+    if (controlSignal == 0)
+      muxOut = input0;
+    else
+      muxOut = input1;
+  end
+
+endmodule
+
+///////////// register mux /////////////
+module registerMux(input controlSignal, input [4:0] input1, input [4:0] input2, output reg [4:0] muxOut);
+always @(*)
+begin
+  if (controlSignal == 0)
+    muxOut = input1;
+  else
+    muxOut = input2;
+end
+endmodule
 
 /////////////// ALU //////////////////
-module ReadDataALU(input [31:0] readData1, input [31:0] signExtend, input [2:0] ALUOp, output Zero, output [31:0] address);
+/*module ReadDataALU(input [31:0] readData1, input [31:0] signExtend, input [2:0] ALUOp, output reg [31:0] address, output reg Zero);
 always @(readData1 or signExtend or ALUOp) begin
   // And //
   if (ALUOp == 3'b000)begin
@@ -222,6 +328,40 @@ always @(readData1 or signExtend or ALUOp) begin
 end
 
 endmodule
+*/
+
+
+module alu(input [31:0] data1, input [31:0] data2, input [2:0] aluOp, output reg [31:0] address, output reg zero);
+
+// output zero can be a continuous result where the ALU result == 0
+
+always @(*)
+begin
+  // make this a case statement
+  case (aluOp)
+  3'b000:
+    address = data1 & data2;
+  3'b001:
+    address = data1 | data2;
+  3'b010:
+    address = data1 + data2;
+  3'b110:
+    address = data1 - data2;
+  3'b111: begin
+    if (data1 < data2)
+      address = 1;
+    else if (data2 < data1)
+      address = 0; 
+  end
+  default:
+    $display("command not found");
+  endcase
+
+  zero = (address == 0) ? 1 : 0;
+end
+endmodule
+
+
 
 /////////////// Register module /////////////////////
 module registers(input clock, input [4:0] readRegister1, input [4:0] readRegister2, input [4:0] writeRegister, input [31:0] writeData, input regWrite, output reg [31:0] readData1, output reg [31:0] readData2, output wire [31:0] v0, output wire [31:0] a0);
@@ -230,7 +370,7 @@ reg [31:0] allRegisters [0:31];
 integer j;
 
 initial begin
-  for (j = 0; j < 32 ; i += 1)begin
+  for (j = 0; j < 32 ; j += 1)begin
     allRegisters[j] = 32'b0;
   end
 end
@@ -250,32 +390,8 @@ always @(negedge clock)begin
 end 
 
 endmodule
-/////////////// Calculate Jump Address /////////////////
-module calculateJumpAddress(input [31:0] PCplus4, input [31:0] inst, output wire [31:0] jumpAddr);
-	assign jumpAddr = {PCplus4[31:28], inst[25:0] << 2};
-endmodule
-////////////// mux 2-to-1 ///////////
-module mux2to1Bit(input jumpOut, input [31:0] jumpAddr, input [31:0] PCplus4, output reg [31:0] nextPC);
-	always @(*)
-	begin 
-		if (jumpOut == 1)
-			nextPC = jumpAddr;
-		else
-			nextPC = PCplus4;
-	end
 
-endmodule
 
-///////////// register mux /////////////
-module registerMux(input [31:0] outSignal, input [4:0] input1, input [4:0] input2, output reg [4:0] muxOut2);
-always @(*)
-begin
-  if (outSignal == 0)
-    muxOut2 = input1;
-  else
-    muxOut2 = input2;
-end
-endmodule
 
 ///////////////// Sign Extend //////////////
 module signExtend(input [15:0] immediate, output [31:0] extendImmediate);
@@ -283,59 +399,63 @@ module signExtend(input [15:0] immediate, output [31:0] extendImmediate);
 endmodule
 
 /////////////////// Syscalls ///////////////
-module syscalls(input syscall, input [31:0] x, input [31:0] y);
+module callSyscall(input syscall, input [31:0] v, input [31:0] a);
 always @(*) begin
   if(syscall == 1) begin
-    if(x == 1) begin
-      $display("This prints: %d", y);
+    if(v == 1) begin
+      $display("This prints: %d", a);
     end
 
-    else if(x == 10) begin
+    else if(v == 10) begin
       $finish;
     end
   end
 end
-
+endmodule
 //////////// TestBench /////////////
 module testbench;
 wire [31:0] nextPC;
 wire [31:0] currPC;
 wire [31:0] inst;
-wire [31:0] jumpAddr;
 wire [31:0] PCplus4;
-wire [10:0] outSignal;
+wire [31:0] jumpAddr;
+
+
+wire [10:0] controlSignal;
 wire [31:0] writeData;
 wire [31:0] readData1;
 wire [31:0] readData2;
 wire [31:0] signExtend;
+
 wire [31:0] aluOut;
 wire [31:0] aluMuxOut;
 
-wire [31:0] v0;
-wire [31:0] a0;
+wire [31:0] registerv0;
+wire [31:0] registera0;
+
 wire [4:0] writeRegister;
 
-wire zero;
+wire Zero;
 wire syscallControl;
-
-reg clock = 0;
-reg jumpOut = signals[9];
+reg clock = 1;
 
 pc testPC(clock, nextPC, currPC); //done
 add4 adder(currPC, PCplus4);
 memory mem(currPC, inst);
-//calculateJumpAddress jumper(inst, PCplus4, jumpAddr);
-assign jumpAddr = {PCplus4[31:28], inst[25:0] << 2};
-control ctrl(inst, jumpOut);
+calculateJumpAddress jumper(inst, PCplus4, jumpAddr);
+//assign jumpAddr = {PCplus4[31:28], inst[25:0] << 2};
 
-register register(clock, inst[25:21], inst[20:16], writeRegister, writeData, outSignal[4], readData1, readData2, v0, a);
-mux2to1Bit muxJump(jumpOut,jumpAddr,PCplus4, nextPC);
-mux2to1Bit muxALU(outSignal[1], readData2, signExtend, aluMuxOut);
-registerMux muxReg(outSignal[10], inst[20:16],inst[15:11],writeRegister); //done
-ReadDataALU ALU(readData1, signExtend, )
+control ctrl(inst, syscallControl, controlSignal);
+registers register(clock, inst[25:21], inst[20:16], writeRegister, writeData, controlSignal[4], readData1, readData2, registerv0, registera0);
+
+registerMux muxReg(controlSignal[10], inst[20:16],inst[15:11],writeRegister); //done
+
+callSyscall Syscall(syscallControl, registerv0, registera0); //done
+
+mux2to1Bit muxJump(1'b0,PCplus4, jumpAddr, nextPC); //done
 signExtend signExtended(inst[15:0],signExtend); //done
-syscalls Syscall(syscallControl, v0, a0); //done
-
+mux2to1Bit muxALU(controlSignal[1], readData2, signExtend, aluMuxOut); //done
+alu ALU(readData1, aluMuxOut, controlSignal[5:3], writeData, Zero);
 always begin
 	#1 clock = ~clock;
 end 
@@ -348,12 +468,5 @@ initial begin
   #100 
 	$finish;
 end
-
-
-
-
-
-
-
-
+endmodule
 

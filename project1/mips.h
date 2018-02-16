@@ -40,6 +40,18 @@
 `define sub          25:21  // 5-bit sub-operation code
 `define coprocessor  20:0   // 21-bit coprocessor-specific field
 
+///////////////  Control Fields   ///////////////
+`define MEMWRITE 0
+`define ALUSRC 1
+`define REGWRITE 2
+`define ALUOP 5:3
+`define MEMTOREG 6
+`define MEMREAD 7
+`define BRANCH 8
+`define JUMP 9
+`define REGDST 10
+
+
 /*-------------------------------------------------------------------------------------------------*
  * Symbolic Register Names for Hardware                                                            *
  *-------------------------------------------------------------------------------------------------*/
