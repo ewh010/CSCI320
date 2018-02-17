@@ -32,40 +32,48 @@ module control(input [31:0] inst, output reg syscallControl, output reg jrContro
     case (inst[`op])
       `J:
         begin
+        $display("Jump");
           Jump = 1;
         end
       `JAL:
         begin
+        $display("Jump and link");
           Jump = 1; RegWrite = 1; jalControl = 1;
         end
 
       `ADDI , `ADDIU:
         begin
+        $display("Addi and Addiu");
           RegWrite = 1; ALUOp = 3'b010; ALUsrc = 1;
         end
 
       `ORI:
         begin
+        $display("ORI");
           RegWrite = 1; ALUOp = 3'b001; ALUsrc = 1;
         end
 
       `BEQ , `BNE:
         begin
+        $display("BEQ and BNE");
           Branch = 1; ALUOp = 3'b110;
         end
 
       `LUI:
         begin
+        $display("LUI");
           RegWrite = 1; ALUsrc = 1; ALUOp = 3'b011;
         end
 
       `LW:
         begin
+        $display("LW");
           MemRead = 1; MemToReg = 1; RegWrite = 1; ALUsrc = 1; ALUOp = 3'b010;
         end
 
       `SW:
         begin
+        $display("SW");
           ALUOp = 3'b010; ALUsrc = 1; MemWrite = 1;
         end
 
@@ -74,22 +82,33 @@ module control(input [31:0] inst, output reg syscallControl, output reg jrContro
           RegDst=1; RegWrite = 1;
 
           case (inst[`function])
-            `ADD:
+            `ADD:begin
+              $display("ADD");
               ALUOp = 3'b010;
-            `SUB:
+            end
+            `SUB: begin
+              $display("SUB");
               ALUOp = 3'b110;
-            `AND:
+            end
+            `AND: begin
+              $display("ANd");
               ALUOp = 3'b000;
-            `OR:
+            end
+            `OR: begin
+              $display("OR");
               ALUOp = 3'b001;
-            `SLT:
+            end
+            `SLT: begin
+              $display("SLT");
               ALUOp = 3'b111;
+            end
             `JR: begin
               $display("We at JR");
               Jump = 1; RegWrite = 1; jrControl = 1;
             end
             `SYSCALL:
             begin
+              $display("Syscall");
               syscallControl = 1; RegWrite = 1;
             end
 

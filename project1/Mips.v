@@ -6,31 +6,32 @@
 `include "pc.v"
 `include "adder.v"
 `include "memory.v"
-`include "JumpAdder.v"
+`include "JumpAddr.v"
 `include "control.v"
-`include "mux2to1.v"
+`include "mux.v"
+//`include "mux5bit.v"
+`include "syscall.v"
 `include "alu.v"
 `include "register.v"
-`include "syscall.v"
 `include "signExtend16to32.v"
-`include "mux5bit.v"
 `include "and.v"
 `include "dataMem.v"
 
+
 ///////////// Testbench Module /////////////////
-module testbench;    
+module testbench;
     wire [31:0] nextPC;
     wire [31:0] currPC;
     wire [31:0] inst;
     wire [31:0] PCplus4;
     wire [31:0] jumpAddr;
 
-    wire [10:0] controlSig;
+    wire [10:0] controlOut;
     wire [31:0] writeData;
     wire [31:0] readData1;
     wire [31:0] readData2;
-    wire [31:0] signExtendedValue;
-    wire [31:0] ALUResult;
+    wire [31:0] signExtendValue;
+    wire [31:0] aluResult;
     wire [31:0] aluMuxOut;
 
     wire [31:0] v0;
@@ -45,45 +46,53 @@ module testbench;
     wire syscallControl;
     wire jalControl;
     wire jrControl;
+
     wire Zero;
     wire andOut;
     reg clock;
-    // gets the current PC 
-    pc pcBlock(clock, nextPC, currPC);
+
+    // get current pc
+    pc PCBlock(clock, nextPC, currPC);
     // adds 4 to current pc to make next pc
     add4 add4PC(currPC, PCplus4);
     // fetches instruction from mem
-    memory instructionMemory(currPC, inst);
+    memory memoryInst(currPC, inst);
     // creates new jump address
-    JumpAdder jumpAddressBlock(inst, PCplus4, jumpAddr);
+    JumpAddr JumpAddrBlock(inst, PCplus4, jumpAddr);
     // takes in all the control signals
-    control controlBlock(inst, syscallControl, jrControl, jalControl, controlSig);
-    // 2 to 1 bit mux for reg write
-    mux5bit registerMux(controlSig[`REGDST], inst[20:16], inst[15:11], writeReg);
+    control controlBlock(inst, syscallControl, jrControl, jalControl, controlOut);
+    
     // all registers execution block
-    register registerBlock(clock, jalControl, currPC + 8, inst[25:21], inst[20:16],writeReg, writeData, controlSig[`REGWRITE], readData1, readData2, v0, a0, ra);
-    // sign extend immediate
-    signExtend16to32 signExtendBlock(inst,signExtendedValue);
-    // adder for the branch address
-    adder branchAddressAdder(PCplus4, signExtendedValue,branchAdderOut);
-    // ALU Mux
-    mux2to1 muxALU(controlSig[`ALUSRC], readData2, signExtendedValue, aluMuxOut);
-    // execution for the ALU block
-    alu ALUBlock(readData1, aluMuxOut, controlSig[`ALUOP], ALUResult, Zero);
-    // Logical And Gate used in MUX
-    andOp andOPGate(controlSig[`BRANCH], Zero, andOut);
-    //mux for Branch Bontrol block
-    mux2to1 muxBranch(andOut, PCplus4,branchAdderOut,branch_mux_out);
-    //mux for Jump Control 
-    mux2to1 muxJump(controlSig[`JUMP], branch_mux_out, jrMux_out, nextPC);
-        // execute data memory for read/write
-    dataMem dataMemory(clock, controlSig[`MEMWRITE], controlSig[`MEMREAD], ALUResult, readData2, readData_mem);
+    register regBlock(clock, jalControl, currPC+8, inst[25:21], inst[20:16], writeReg, writeData, controlOut[`REGWRITE], readData1, readData2, v0, a0, ra);
+    // 2 to 1 bit mux for reg write
+    mux5bit registerMux(controlOut[`REGDST], inst[20:16], inst[15:11], writeReg);
 
-    // mux to control input to writeData
-    mux2to1 memToRegMux(controlSig[`MEMTOREG], ALUResult, readData_mem, writeData);
+    // syscall execute when needed
+    syscall testSyscall(syscallControl, v0, a0);
+    // sign extended immediate
+    signExtend16to32 signExtend_block(inst, signExtendValue);
 
-    // mux for jr control
+    // adder for branch address
+    adder branchAdder(PCplus4, signExtendValue, branchAdderOut);
+    // mux for alu
+    mux2to1 aluMux(controlOut[`ALUSRC], readData2, signExtendValue, aluMuxOut);
+
+    // execute alu block
+    alu ALU_block(readData1, aluMuxOut, controlOut[`ALUOP], aluResult, Zero);
+
+    // and gate for mux
+    andOp and_gate(controlOut[`BRANCH], Zero, andOut);
+    // mux for branch control
+    mux2to1 branchMux(andOut, PCplus4, branchAdderOut, branch_mux_out);
+    // mux for jump control
+    mux2to1 jumpMux(controlOut[`JUMP], branch_mux_out, jrMux_out, nextPC);
+    // data memory execute(read or write)
+    dataMem dataMem(clock, controlOut[`MEMWRITE], controlOut[`MEMREAD], aluResult, readData2, readData_mem);
+
+    // mux controls Jump Register 
     mux2to1 jrMux(jrControl, jumpAddr, ra, jrMux_out);
+    // mux controls write Data
+    mux2to1 memToRegMux(controlOut[`MEMTOREG], aluResult, readData_mem, writeData);
 
 
 
@@ -91,17 +100,18 @@ module testbench;
         #10 clock = ~clock;
     end
 
-    initial begin
+    initial
+    begin
+
         clock = 1;
+
         $dumpfile("testbench.vcd");
         $dumpvars(0,testbench);
-        $monitor($time, "in %m, currPC %08x, nextPC = %08x, inst =%08x, jumpAddr =%08x, PCplus4 =%08x", currPC, nextPC, inst, jumpAddr, PCplus4);
-        #500000 $finish;
+
+        //$monitor($time, " in %m, currPC = %08x, nextPC = %08x, instruction = %08x\n", currPC, nextPC, instr);
+
+        #50000 $finish;
+
     end
+
 endmodule
-
-
-
-
-
-

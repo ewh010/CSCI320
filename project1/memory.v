@@ -10,6 +10,7 @@ module memory(input [31:0] currPC, output reg [31:0] inst);
     initial begin
         $readmemh("./fibonacci/fibonacciRefined.v", mem);
         // $readmemh("add_test.v", mem);
+        //$readmemh("./fibonacci5/fibonacci5.v")
     end
 
     always @(currPC) begin

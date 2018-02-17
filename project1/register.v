@@ -22,19 +22,21 @@ module register(input clock, input jalControl, input[31:0] jalAddress, input [4:
   always @(readRegister1, readRegister2) begin
     readData1 = register[readRegister1];
     readData2 = register[readRegister2];
+//    if ((readRegister1 == `ra) & (readRegister2 == `ra)) begin
+//      $display("reading this value from ra = %x", register[`ra]);
+//      end
   end
 
   always @(negedge clock) begin
     //$display("address in ra = %x", register[`ra]);
     if ((writeReg != `zero) & (RegWrite == 1)) begin
       if (jalControl == 1) begin
-          $display("Writing to ra this value: %x", jalAddress);
+//          $display("Writing to ra this value: %x", jalAddress);
           register[`ra] = jalAddress;
         end
       else begin
-          if (writeReg != `ra)
-            register[writeReg] = writeData;
-        end
+        register[writeReg] = writeData;
+      end
     end
-  end
+  end 
 endmodule
